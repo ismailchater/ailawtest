@@ -4,7 +4,7 @@ Multi-module legal assistant for Moroccan law (CGI, Code du Travail, etc.)
 """
 
 import streamlit as st
-from typing import Optional, Tuple, Dict, Any
+from typing import Optional, Tuple, Dict, Any, List
 
 from config import MODULES, get_module_config
 from document_loader import DocumentProcessor, PDFLoadError
@@ -215,6 +215,47 @@ def apply_golden_theme():
             text-decoration: none;
             font-weight: 600;
         }
+        
+        /* Clickable sources styling */
+        .sources-container {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #FFF8EC 0%, #F5EBD7 100%);
+            border-radius: 12px;
+            border: 1px solid #D4A574;
+        }
+        
+        .sources-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            color: #6B5A3E;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .source-content {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: #2D2A26;
+            line-height: 1.6;
+            padding: 0.75rem;
+            background: #FFFDF8;
+            border-radius: 8px;
+            border-left: 3px solid #D4A574;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        /* Popover styling */
+        [data-testid="stPopover"] {
+            background: #FFF8EC !important;
+        }
+        
+        [data-testid="stPopoverBody"] {
+            background: #FFFDF8 !important;
+            border: 2px solid #D4A574 !important;
+            border-radius: 12px !important;
+        }
         </style>
     """, unsafe_allow_html=True)
 
@@ -231,6 +272,8 @@ def init_session_state():
         st.session_state.messages = {}
     if "module_initialized" not in st.session_state:
         st.session_state.module_initialized = {}
+    if "message_sources" not in st.session_state:
+        st.session_state.message_sources = {}  # Store sources per message
 
 
 def set_current_module(module_id: str):
@@ -296,6 +339,43 @@ def get_rag_chain(_vs_manager: VectorStoreManager, module_id: str) -> RAGChainBu
     """Get or create the RAG chain for a module."""
     module_config = get_module_config(module_id)
     return create_rag_chain(_vs_manager, module_config)
+
+
+# =============================================================================
+# Source Display Helper
+# =============================================================================
+
+def render_clickable_sources(sources: List[Dict[str, Any]], key_prefix: str = ""):
+    """
+    Render clickable source buttons with popovers showing the content.
+    
+    Args:
+        sources: List of source dictionaries with 'page' and 'content' keys
+        key_prefix: Unique prefix for button keys to avoid conflicts
+    """
+    if not sources:
+        return
+    
+    st.markdown("---")
+    st.markdown("📄 **Sources consultées** _(cliquez pour voir le contenu)_")
+    
+    # Create columns for source buttons
+    num_sources = len(sources)
+    cols = st.columns(min(num_sources, 5))  # Max 5 columns
+    
+    for idx, source in enumerate(sources):
+        col_idx = idx % len(cols)
+        with cols[col_idx]:
+            page_num = source.get("page", "N/A")
+            content = source.get("content", "Contenu non disponible")
+            
+            with st.popover(f"📖 Page {page_num}", use_container_width=True):
+                st.markdown(f"**Extrait de la Page {page_num}**")
+                st.markdown("---")
+                st.markdown(
+                    f'<div class="source-content">{content}</div>',
+                    unsafe_allow_html=True
+                )
 
 
 # =============================================================================
@@ -430,9 +510,15 @@ def render_chat_page(module_id: str):
     st.markdown("---")
     
     # Chat history
-    for message in st.session_state.messages.get(module_id, []):
+    for idx, message in enumerate(st.session_state.messages.get(module_id, [])):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+            # Show clickable sources for assistant messages that have them
+            if message["role"] == "assistant":
+                sources_key = f"{module_id}_{idx}"
+                sources = st.session_state.message_sources.get(sources_key, [])
+                if sources:
+                    render_clickable_sources(sources, key_prefix=f"history_{idx}")
     
     # Chat input
     if prompt := st.chat_input(f"Posez votre question sur le {module_config['short_name']}..."):
@@ -449,22 +535,30 @@ def render_chat_page(module_id: str):
                 conversation_history = st.session_state.messages.get(module_id, [])
                 result = query_handler.ask(prompt, conversation_history=conversation_history)
                 
+                sources_to_display = []
+                
                 if result["success"]:
                     response = result["answer"]
                     
-                    # Add sources for non-conversational queries
+                    # Get sources for non-conversational queries
                     if not result.get("is_conversational", False) and result["sources"]:
-                        pages = [str(p) for p in result["sources"] if p != "N/A"]
-                        if pages:
-                            sorted_pages = sorted(set(pages), key=lambda x: int(x) if x.isdigit() else 0)
-                            response += f"\n\n📄 _Sources: Pages {', '.join(sorted_pages)}_"
+                        sources_to_display = result["sources"]
                 else:
                     response = f"⚠️ Erreur: {result['error']}\n\nVeuillez réessayer."
                 
                 st.markdown(response)
+                
+                # Display clickable sources
+                if sources_to_display:
+                    render_clickable_sources(sources_to_display, key_prefix="new")
         
         # Add assistant message
         st.session_state.messages[module_id].append({"role": "assistant", "content": response})
+        
+        # Store sources for this message (for history display)
+        message_idx = len(st.session_state.messages[module_id]) - 1
+        sources_key = f"{module_id}_{message_idx}"
+        st.session_state.message_sources[sources_key] = sources_to_display
     
     # Clear chat button
     st.markdown("---")

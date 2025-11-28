@@ -223,6 +223,49 @@ class RAGQueryHandler:
         
         return "\n".join(formatted_parts)
     
+    def _build_sources_data(self, documents: List[Document], max_sources: int = 5) -> List[Dict[str, Any]]:
+        """
+        Build rich source data from documents for clickable display.
+        
+        Args:
+            documents: List of retrieved documents
+            max_sources: Maximum number of unique sources to return
+            
+        Returns:
+            List of dicts with page, content, and preview keys
+        """
+        if not documents:
+            return []
+        
+        # Group by page to avoid duplicates, keep best content per page
+        page_sources = {}
+        for doc in documents:
+            page = doc.metadata.get("page", "N/A")
+            content = doc.page_content.strip()
+            
+            # Skip if page already exists with longer content
+            if page in page_sources:
+                if len(content) > len(page_sources[page]["content"]):
+                    page_sources[page] = {
+                        "page": page,
+                        "content": content,
+                        "preview": content[:150] + "..." if len(content) > 150 else content
+                    }
+            else:
+                page_sources[page] = {
+                    "page": page,
+                    "content": content,
+                    "preview": content[:150] + "..." if len(content) > 150 else content
+                }
+        
+        # Sort by page number and limit
+        sorted_sources = sorted(
+            page_sources.values(),
+            key=lambda x: int(x["page"]) if str(x["page"]).isdigit() else 0
+        )
+        
+        return sorted_sources[:max_sources]
+    
     def ask(self, question: str, conversation_history: List[Dict[str, str]] = None) -> Dict[str, Any]:
         """
         Ask a question and get a structured response.
@@ -250,17 +293,15 @@ Nouvelle question de l'utilisateur: {question}"""
             answer = self.rag_chain.invoke(question_with_context)
             
             if is_conversational:
-                source_pages = []
+                sources_data = []
             else:
                 sources = self.rag_chain.get_relevant_documents(question)
-                source_pages = list(set(
-                    doc.metadata.get("page", "N/A") 
-                    for doc in sources
-                ))
+                # Build rich source data with content for clickable sources
+                sources_data = self._build_sources_data(sources)
             
             return {
                 "answer": answer,
-                "sources": source_pages,
+                "sources": sources_data,
                 "success": True,
                 "error": None,
                 "is_conversational": is_conversational
