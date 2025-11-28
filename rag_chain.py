@@ -189,11 +189,65 @@ class RAGQueryHandler:
         """Initialize the query handler."""
         self.rag_chain = rag_chain
     
-    def ask(self, question: str) -> Dict[str, Any]:
-        """Ask a question and get a structured response."""
+    def _format_conversation_history(self, history: List[Dict[str, str]], max_exchanges: int = 5) -> str:
+        """
+        Format the last N exchanges from conversation history.
+        
+        Args:
+            history: List of message dictionaries with 'role' and 'content' keys
+            max_exchanges: Maximum number of exchanges (user+assistant pairs) to include
+            
+        Returns:
+            Formatted conversation history string
+        """
+        if not history or len(history) <= 1:
+            return ""
+        
+        # Skip the initial assistant greeting, take last messages
+        # Each exchange = 2 messages (user + assistant)
+        relevant_history = history[1:]  # Skip first greeting
+        max_messages = max_exchanges * 2
+        
+        if len(relevant_history) > max_messages:
+            relevant_history = relevant_history[-max_messages:]
+        
+        if not relevant_history:
+            return ""
+        
+        formatted_parts = []
+        for msg in relevant_history:
+            role = "Utilisateur" if msg["role"] == "user" else "Assistant"
+            # Truncate long messages for context
+            content = msg["content"][:500] + "..." if len(msg["content"]) > 500 else msg["content"]
+            formatted_parts.append(f"{role}: {content}")
+        
+        return "\n".join(formatted_parts)
+    
+    def ask(self, question: str, conversation_history: List[Dict[str, str]] = None) -> Dict[str, Any]:
+        """
+        Ask a question and get a structured response.
+        
+        Args:
+            question: The user's question
+            conversation_history: Optional list of previous messages for context
+        """
         try:
             is_conversational = is_conversational_query(question)
-            answer = self.rag_chain.invoke(question)
+            
+            # Build question with conversation context
+            if conversation_history and len(conversation_history) > 1:
+                history_text = self._format_conversation_history(conversation_history)
+                if history_text:
+                    question_with_context = f"""Historique de la conversation récente:
+{history_text}
+
+Nouvelle question de l'utilisateur: {question}"""
+                else:
+                    question_with_context = question
+            else:
+                question_with_context = question
+            
+            answer = self.rag_chain.invoke(question_with_context)
             
             if is_conversational:
                 source_pages = []

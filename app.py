@@ -61,7 +61,7 @@ def apply_golden_theme():
             text-align: center;
             font-size: 1.2rem;
             font-weight: 400;
-            margin-bottom: 2rem;
+            margin-bottom: 0.5rem;
         }
         
         /* Module cards */
@@ -156,6 +156,16 @@ def apply_golden_theme():
             border-radius: 8px;
         }
         
+        /* Fix green on green - ensure success text is dark */
+        .stSuccess p, .stSuccess span, .stSuccess div, .stSuccess svg {
+            color: #155724 !important;
+            fill: #155724 !important;
+        }
+        
+        .stSuccess [data-testid="stMarkdownContainer"] p {
+            color: #155724 !important;
+        }
+        
         .stError {
             background: linear-gradient(135deg, #F8D7DA 0%, #F5C6CB 100%);
             border-left: 4px solid #DC3545;
@@ -180,7 +190,7 @@ def apply_golden_theme():
             font-weight: 600;
             color: #8B6914;
             text-align: center;
-            margin: 2rem 0 1rem 0;
+            margin: 0.5rem 0 1rem 0;
             padding: 0.5rem;
             border-bottom: 2px solid #D4A574;
         }
@@ -382,7 +392,13 @@ def render_chat_page(module_id: str):
             unsafe_allow_html=True
         )
     
-    # Main content
+    # Main content - Back button at the top
+    col_back, col_spacer = st.columns([1, 5])
+    with col_back:
+        if st.button("← Retour", key="main_back_btn"):
+            go_back_to_home()
+            st.rerun()
+    
     st.markdown(
         f'<h1 class="main-title">{module_config["icon"]} {module_config["short_name"]}</h1>',
         unsafe_allow_html=True
@@ -426,10 +442,12 @@ def render_chat_page(module_id: str):
         with st.chat_message("user"):
             st.markdown(prompt)
         
-        # Generate response
+        # Generate response with conversation context
         with st.chat_message("assistant"):
             with st.spinner("Réflexion en cours..."):
-                result = query_handler.ask(prompt)
+                # Pass last 5 exchanges as context
+                conversation_history = st.session_state.messages.get(module_id, [])
+                result = query_handler.ask(prompt, conversation_history=conversation_history)
                 
                 if result["success"]:
                     response = result["answer"]
