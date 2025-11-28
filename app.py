@@ -356,14 +356,23 @@ def render_clickable_sources(sources: List[Dict[str, Any]], key_prefix: str = ""
     if not sources:
         return
     
+    # Filter out invalid sources and ensure they are dictionaries
+    valid_sources = []
+    for source in sources:
+        if isinstance(source, dict) and "page" in source:
+            valid_sources.append(source)
+    
+    if not valid_sources:
+        return
+    
     st.markdown("---")
     st.markdown("📄 **Sources consultées** _(cliquez pour voir le contenu)_")
     
     # Create columns for source buttons
-    num_sources = len(sources)
+    num_sources = len(valid_sources)
     cols = st.columns(min(num_sources, 5))  # Max 5 columns
     
-    for idx, source in enumerate(sources):
+    for idx, source in enumerate(valid_sources):
         col_idx = idx % len(cols)
         with cols[col_idx]:
             page_num = source.get("page", "N/A")
