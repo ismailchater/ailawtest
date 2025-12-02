@@ -19,7 +19,7 @@ class ChunkingConfig:
 class ModelConfig:
     """Configuration for OpenAI models."""
     EMBEDDING_MODEL: str = "text-embedding-3-small"
-    LLM_MODEL: str = "gpt-5-mini"
+    LLM_MODEL: str = "gpt-5"
     LLM_TEMPERATURE: float = 0.5
 
 

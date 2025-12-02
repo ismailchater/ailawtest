@@ -234,6 +234,10 @@ class RAGQueryHandler:
         try:
             is_conversational = is_conversational_query(question)
             
+            # For technical questions, append instruction for detailed response
+            if not is_conversational:
+                question = f"{question}\n\n[INSTRUCTION: Réponds de manière EXHAUSTIVE et STRUCTURÉE avec des sections numérotées. NE DIS PAS Bonjour. NE DIS PAS 'N'hésitez pas'. Va DIRECTEMENT au contenu.]"
+            
             # Build question with conversation context
             if conversation_history and len(conversation_history) > 1:
                 history_text = self._format_conversation_history(conversation_history)
