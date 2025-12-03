@@ -51,53 +51,6 @@ def is_conversational_query(question: str) -> bool:
     return False
 
 
-# Keywords for each module to detect on-topic questions
-MODULE_KEYWORDS = {
-    "cgi": [
-        "impôt", "taxe", "tva", "is", "ir", "fiscal", "taux", "article", "cgi",
-        "déclar", "exonér", "société", "revenu", "bénéfice", "auto-entrepreneur",
-        "contribution", "redevance", "droit", "enregistrement", "timbre", "patente",
-        "plus-value", "déficit", "amortissement", "provision", "déduction", "abattement",
-        "barème", "tranche", "assiette", "base imposable", "fait générateur",
-        "recouvrement", "contrôle", "vérification", "redressement", "pénalité",
-        "majoration", "intérêt", "retard", "contentieux", "réclamation"
-    ],
-    "cdt": [
-        "travail", "contrat", "licenciement", "congé", "salaire", "employeur",
-        "salarié", "cdd", "cdi", "préavis", "indemnité", "syndicat", "grève",
-        "heures", "smig", "smag", "embauche", "démission", "faute", "grave",
-        "période", "essai", "formation", "apprentissage", "stage", "accident",
-        "maladie", "maternité", "paternité", "repos", "hebdomadaire", "férié",
-        "ancienneté", "prime", "bonus", "convention", "collective", "inspection",
-        "délégué", "personnel", "comité", "entreprise", "règlement", "intérieur"
-    ]
-}
-
-# Refusal messages for off-topic questions
-OFF_TOPIC_MESSAGES = {
-    "cgi": "Je suis un assistant spécialisé uniquement dans le **Code Général des Impôts du Maroc** (fiscalité, TVA, IS, IR, taxes, etc.).\n\nVotre question ne semble pas concerner la fiscalité marocaine. Puis-je vous aider avec une question fiscale ?",
-    "cdt": "Je suis un assistant spécialisé uniquement dans le **Code du Travail du Maroc** (contrats, licenciement, congés, salaires, etc.).\n\nVotre question ne semble pas concerner le droit du travail marocain. Puis-je vous aider avec une question sur le droit du travail ?"
-}
-
-
-def is_off_topic(question: str, module_id: str) -> bool:
-    """Check if the question is off-topic for the given module."""
-    question_lower = question.lower().strip()
-    
-    # Get keywords for this module
-    keywords = MODULE_KEYWORDS.get(module_id, [])
-    
-    # If it's a greeting/conversational query, it's not off-topic
-    if is_conversational_query(question):
-        return False
-    
-    # Check if any module keyword is present in the question
-    has_relevant_keyword = any(kw in question_lower for kw in keywords)
-    
-    # If no relevant keyword found, it's likely off-topic
-    return not has_relevant_keyword
-
-
 class RAGChainBuilder:
     """
     Builds and manages the RAG chain for any legal module.
@@ -293,19 +246,9 @@ class RAGQueryHandler:
         try:
             is_conversational = is_conversational_query(question)
             
-            # Check if question is off-topic for this module
-            if not is_conversational and is_off_topic(question, self.module_id):
-                return {
-                    "answer": OFF_TOPIC_MESSAGES.get(self.module_id, "Cette question est hors-sujet."),
-                    "sources": [],
-                    "success": True,
-                    "error": None,
-                    "is_conversational": False
-                }
-            
-            # For technical questions, append instruction for detailed response
+            # For technical questions, append short instruction
             if not is_conversational:
-                question = f"{question}\n\n[INSTRUCTION: Réponds de manière EXHAUSTIVE et STRUCTURÉE avec des sections numérotées. NE DIS PAS Bonjour. NE DIS PAS 'N'hésitez pas'. Va DIRECTEMENT au contenu.]"
+                question = f"{question}\n\n[Réponse complète et structurée, sans salutation]"
             
             # Build question with conversation context
             if conversation_history and len(conversation_history) > 1:
@@ -352,19 +295,13 @@ Nouvelle question de l'utilisateur: {question}"""
         """
         Stream a response for the question.
         
-        Returns a generator that yields chunks of the response, plus metadata at the end.
+        Returns a generator that yields chunks of the response.
         """
-        original_question = question
         is_conversational = is_conversational_query(question)
         
-        # Check if question is off-topic for this module
-        if not is_conversational and is_off_topic(question, self.module_id):
-            yield OFF_TOPIC_MESSAGES.get(self.module_id, "Cette question est hors-sujet.")
-            return
-        
-        # For technical questions, append instruction for detailed response
+        # For technical questions, append short instruction
         if not is_conversational:
-            question = f"{question}\n\n[INSTRUCTION: Réponds de manière EXHAUSTIVE et STRUCTURÉE avec des sections numérotées. NE DIS PAS Bonjour. NE DIS PAS 'N'hésitez pas'. Va DIRECTEMENT au contenu.]"
+            question = f"{question}\n\n[Réponse complète et structurée, sans salutation]"
         
         # Build question with conversation context
         if conversation_history and len(conversation_history) > 1:
