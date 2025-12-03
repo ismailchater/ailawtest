@@ -126,7 +126,7 @@ Ta réponse chaleureuse :"""
     
     def build_chain(self):
         """Build the complete RAG chain."""
-        retriever = self.vector_store_manager.get_retriever(search_kwargs={"k": 8})
+        retriever = self.vector_store_manager.get_retriever(search_kwargs={"k": 12})
         prompt = self._create_prompt_template()
         llm = self._get_llm()
         
@@ -246,9 +246,9 @@ class RAGQueryHandler:
         try:
             is_conversational = is_conversational_query(question)
             
-            # For technical questions, append short instruction
+            # For technical questions, append instruction for detailed response
             if not is_conversational:
-                question = f"{question}\n\n[Réponse complète et structurée, sans salutation]"
+                question = f"{question}\n\n[IMPORTANT: Donne une réponse DÉTAILLÉE et EXHAUSTIVE. Cite les articles du CGI/Code du Travail avec leurs numéros. Inclus tous les taux, montants, conditions et exceptions. Structure avec des sections numérotées.]"
             
             # Build question with conversation context
             if conversation_history and len(conversation_history) > 1:
@@ -301,7 +301,7 @@ Nouvelle question de l'utilisateur: {question}"""
         
         # For technical questions, append short instruction
         if not is_conversational:
-            question = f"{question}\n\n[Réponse complète et structurée, sans salutation]"
+            question = f"{question}\n\n[IMPORTANT: Donne une réponse DÉTAILLÉE et EXHAUSTIVE. Cite les articles du CGI/Code du Travail avec leurs numéros. Inclus tous les taux, montants, conditions et exceptions. Structure avec des sections numérotées.]"
         
         # Build question with conversation context
         if conversation_history and len(conversation_history) > 1:
