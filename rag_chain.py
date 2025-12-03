@@ -248,7 +248,7 @@ class RAGQueryHandler:
             
             # For technical questions, append instruction for detailed response
             if not is_conversational:
-                question = f"{question}\n\n[IMPORTANT: Donne une réponse DÉTAILLÉE et EXHAUSTIVE. Cite les articles du CGI/Code du Travail avec leurs numéros. Inclus tous les taux, montants, conditions et exceptions. Structure avec des sections numérotées.]"
+                question = f"{question}\n\n[IMPORTANT: Réponse DÉTAILLÉE et EXHAUSTIVE. Cite les articles de loi avec leurs numéros. Inclus tous les taux, montants, conditions et exceptions. Structure en sections numérotées.]"
             
             # Build question with conversation context
             if conversation_history and len(conversation_history) > 1:
@@ -299,9 +299,9 @@ Nouvelle question de l'utilisateur: {question}"""
         """
         is_conversational = is_conversational_query(question)
         
-        # For technical questions, append short instruction
+        # For technical questions, append instruction for detailed response
         if not is_conversational:
-            question = f"{question}\n\n[IMPORTANT: Donne une réponse DÉTAILLÉE et EXHAUSTIVE. Cite les articles du CGI/Code du Travail avec leurs numéros. Inclus tous les taux, montants, conditions et exceptions. Structure avec des sections numérotées.]"
+            question = f"{question}\n\n[IMPORTANT: Réponse DÉTAILLÉE et EXHAUSTIVE. Cite les articles de loi avec leurs numéros. Inclus tous les taux, montants, conditions et exceptions. Structure en sections numérotées.]"
         
         # Build question with conversation context
         if conversation_history and len(conversation_history) > 1:
