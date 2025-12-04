@@ -291,8 +291,11 @@ def load_module_resources(module_id: str) -> Tuple[bool, Optional[str], int, Opt
         return False, f"Erreur inattendue: {str(e)}", 0, None
 
 
+# Version bump to invalidate cache when prompts change (NO underscore = included in cache key)
+RAG_CHAIN_VERSION = "v5"
+
 @st.cache_resource(show_spinner=False)
-def get_rag_chain(_vs_manager: VectorStoreManager, module_id: str) -> RAGChainBuilder:
+def get_rag_chain(_vs_manager: VectorStoreManager, module_id: str, version: str = RAG_CHAIN_VERSION) -> RAGChainBuilder:
     """Get or create the RAG chain for a module."""
     module_config = get_module_config(module_id)
     return create_rag_chain(_vs_manager, module_config)

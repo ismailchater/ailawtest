@@ -126,7 +126,8 @@ Ta réponse chaleureuse :"""
     
     def build_chain(self):
         """Build the complete RAG chain."""
-        retriever = self.vector_store_manager.get_retriever(search_kwargs={"k": 12})
+        # Retrieve more documents (15) for better coverage of complex topics
+        retriever = self.vector_store_manager.get_retriever(search_kwargs={"k": 15})
         prompt = self._create_prompt_template()
         llm = self._get_llm()
         
@@ -246,18 +247,11 @@ class RAGQueryHandler:
         try:
             is_conversational = is_conversational_query(question)
             
-            # For technical questions, append instruction for detailed response
-            if not is_conversational:
-                question = f"{question}\n\n[IMPORTANT: Réponse DÉTAILLÉE et EXHAUSTIVE. Cite les articles de loi avec leurs numéros. Inclus tous les taux, montants, conditions et exceptions. Structure en sections numérotées.]"
-            
             # Build question with conversation context
             if conversation_history and len(conversation_history) > 1:
                 history_text = self._format_conversation_history(conversation_history)
                 if history_text:
-                    question_with_context = f"""Historique de la conversation récente:
-{history_text}
-
-Nouvelle question de l'utilisateur: {question}"""
+                    question_with_context = f"Contexte de conversation:\n{history_text}\n\nQuestion actuelle: {question}"
                 else:
                     question_with_context = question
             else:
@@ -297,28 +291,27 @@ Nouvelle question de l'utilisateur: {question}"""
         
         Returns a generator that yields chunks of the response.
         """
+        # Check if conversational BEFORE modifying the question
         is_conversational = is_conversational_query(question)
         
-        # For technical questions, append instruction for detailed response
-        if not is_conversational:
-            question = f"{question}\n\n[IMPORTANT: Réponse DÉTAILLÉE et EXHAUSTIVE. Cite les articles de loi avec leurs numéros. Inclus tous les taux, montants, conditions et exceptions. Structure en sections numérotées.]"
-        
-        # Build question with conversation context
-        if conversation_history and len(conversation_history) > 1:
-            history_text = self._format_conversation_history(conversation_history)
-            if history_text:
-                question_with_context = f"""Historique de la conversation récente:
-{history_text}
-
-Nouvelle question de l'utilisateur: {question}"""
+        if is_conversational:
+            # For conversational queries, use the conversational chain directly
+            for chunk in self.rag_chain.get_conversational_chain().stream(question):
+                yield chunk
+        else:
+            # For legal queries, build question with conversation context
+            if conversation_history and len(conversation_history) > 1:
+                history_text = self._format_conversation_history(conversation_history)
+                if history_text:
+                    question_with_context = f"Contexte de conversation:\n{history_text}\n\nQuestion actuelle: {question}"
+                else:
+                    question_with_context = question
             else:
                 question_with_context = question
-        else:
-            question_with_context = question
-        
-        # Stream the response
-        for chunk in self.rag_chain.stream(question_with_context):
-            yield chunk
+            
+            # Stream the RAG response
+            for chunk in self.rag_chain.get_chain().stream(question_with_context):
+                yield chunk
     
     def get_sources(self, question: str) -> List:
         """Get source pages for a question."""

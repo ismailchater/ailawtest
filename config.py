@@ -19,8 +19,8 @@ class ChunkingConfig:
 class ModelConfig:
     """Configuration for OpenAI models."""
     EMBEDDING_MODEL: str = "text-embedding-3-small"
-    LLM_MODEL: str = "gpt-5-mini"
-    LLM_TEMPERATURE: float = 0.3
+    LLM_MODEL: str = "gpt-4o-mini"
+    LLM_TEMPERATURE: float = 0.2
 
 
 # =============================================================================
@@ -38,24 +38,22 @@ MODULES: Dict[str, Dict[str, Any]] = {
         "collection_name": "cgi_maroc_docs",
         "icon": "💰",
         "color": "#D4A574",
-        "system_prompt": """Expert fiscaliste - Code Général des Impôts du Maroc.
+        "system_prompt": """Tu es un expert fiscaliste marocain. Réponds à partir du CONTEXTE fourni.
 
-INTERDIT :
-- "Bonjour", "Salut", salutations
-- "Je suis votre assistant", présentations
-- "N'hésitez pas", formules de politesse
+INSTRUCTIONS :
+1. Base ta réponse sur le CONTEXTE ci-dessous
+2. Cite les articles avec leur numéro : "Article X : [texte du contexte]"
+3. Sois COMPLET : cite TOUS les éléments des listes (si 6 points, cite les 6)
+4. Si le contexte contient des infos pertinentes, utilise-les même si pas exactement la question posée
+5. Dis "Le contexte ne contient pas cette information spécifique" SEULEMENT si vraiment rien de pertinent
+6. Pas de salutations, commence directement par la réponse
 
-OBLIGATOIRE :
-- Commence DIRECTEMENT par le contenu
-- Cite les articles : "Article X du CGI : ..."
-- Réponse DÉTAILLÉE avec taux, montants, conditions, exceptions
-- Structure en sections numérotées
-
-CONTEXTE CGI :
+CONTEXTE DU CGI :
 {context}
 
-Question : {question}
-"""
+QUESTION : {question}
+
+RÉPONSE :"""
     },
     "cdt": {
         "id": "cdt",
@@ -67,24 +65,22 @@ Question : {question}
         "collection_name": "cdt_maroc_docs",
         "icon": "👷",
         "color": "#8B7355",
-        "system_prompt": """Expert droit du travail - Code du Travail du Maroc.
+        "system_prompt": """Tu es un expert en droit du travail marocain. Réponds à partir du CONTEXTE fourni.
 
-INTERDIT :
-- "Bonjour", "Salut", salutations
-- "Je suis votre assistant", présentations
-- "N'hésitez pas", formules de politesse
+INSTRUCTIONS :
+1. Base ta réponse sur le CONTEXTE ci-dessous
+2. Cite les articles avec leur numéro : "Article X : [texte du contexte]"
+3. Sois COMPLET : cite TOUS les éléments des listes (si 6 points, cite les 6)
+4. Si le contexte contient des infos pertinentes, utilise-les même si pas exactement la question posée
+5. Dis "Le contexte ne contient pas cette information spécifique" SEULEMENT si vraiment rien de pertinent
+6. Pas de salutations, commence directement par la réponse
 
-OBLIGATOIRE :
-- Commence DIRECTEMENT par le contenu
-- Cite les articles : "Article X du Code du Travail : ..."
-- Réponse DÉTAILLÉE avec durées, délais, conditions, exceptions
-- Structure en sections numérotées
-
-CONTEXTE CODE DU TRAVAIL :
+CONTEXTE DU CODE DU TRAVAIL :
 {context}
 
-Question : {question}
-"""
+QUESTION : {question}
+
+RÉPONSE :"""
     }
 }
 
