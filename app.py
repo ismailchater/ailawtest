@@ -452,15 +452,7 @@ def render_chat_page(module_id: str):
             # Stream the response
             response = st.write_stream(query_handler.stream(prompt, conversation_history=conversation_history))
             
-            # Add sources after streaming completes
-            sources = query_handler.get_sources(prompt)
-            if sources:
-                pages = [str(p) for p in sources if p != "N/A"]
-                if pages:
-                    sorted_pages = sorted(set(pages), key=lambda x: int(x) if x.isdigit() else 0)
-                    sources_text = f"\n\n📄 _Sources: Pages {', '.join(sorted_pages)}_"
-                    st.markdown(sources_text)
-                    response += sources_text
+            # Sources removed from UI for cleaner display
         
         # Add assistant message
         st.session_state.messages[module_id].append({"role": "assistant", "content": response})
