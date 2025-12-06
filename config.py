@@ -38,6 +38,7 @@ MODULES: Dict[str, Dict[str, Any]] = {
         "collection_name": "cgi_maroc_docs",
         "icon": "💰",
         "color": "#D4A574",
+        "enabled": True,
         "system_prompt": """Tu es un expert fiscaliste marocain. Réponds à partir du CONTEXTE fourni.
 
 INSTRUCTIONS :
@@ -65,6 +66,7 @@ RÉPONSE :"""
         "collection_name": "cdt_maroc_docs",
         "icon": "👷",
         "color": "#8B7355",
+        "enabled": True,
         "system_prompt": """Tu es un expert en droit du travail marocain. Réponds à partir du CONTEXTE fourni.
 
 INSTRUCTIONS :
@@ -81,6 +83,32 @@ CONTEXTE DU CODE DU TRAVAIL :
 QUESTION : {question}
 
 RÉPONSE :"""
+    },
+    "famille": {
+        "id": "famille",
+        "name": "Code de la Famille",
+        "short_name": "Famille",
+        "description": "Mariage, divorce, filiation, héritage, tutelle",
+        "pdf_path": "code_famille_maroc.pdf",
+        "persist_directory": "./chroma_db_famille",
+        "collection_name": "famille_maroc_docs",
+        "icon": "👨‍👩‍👧‍👦",
+        "color": "#9B6B8C",
+        "enabled": False,  # Coming soon
+        "system_prompt": ""
+    },
+    "immobilier": {
+        "id": "immobilier",
+        "name": "Immobilier",
+        "short_name": "Immo",
+        "description": "Droit immobilier, propriété, location, copropriété",
+        "pdf_path": "code_immobilier_maroc.pdf",
+        "persist_directory": "./chroma_db_immobilier",
+        "collection_name": "immobilier_maroc_docs",
+        "icon": "🏠",
+        "color": "#5D8AA8",
+        "enabled": False,  # Coming soon
+        "system_prompt": ""
     }
 }
 
