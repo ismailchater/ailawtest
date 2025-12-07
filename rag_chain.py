@@ -194,15 +194,16 @@ Ta réponse chaleureuse :"""
         return ChatPromptTemplate.from_template(conversational_template)
     
     def _format_documents(self, documents: List[Document]) -> str:
-        """Format retrieved documents into a single context string."""
+        """Format retrieved documents into a single context string with file citations."""
         if not documents:
             return "Aucun contexte disponible."
         
         formatted_parts = []
         for i, doc in enumerate(documents, 1):
+            file_name = doc.metadata.get("file_name", "Document")
             page_num = doc.metadata.get("page", "N/A")
             content = doc.page_content.strip()
-            formatted_parts.append(f"[Source {i} - Page {page_num}]\n{content}")
+            formatted_parts.append(f"[Source {i} - Fichier: {file_name}, Page {page_num}]\n{content}")
         
         return "\n\n---\n\n".join(formatted_parts)
     

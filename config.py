@@ -1,6 +1,7 @@
 """
 Configuration module for the multi-module legal assistant application.
 Supports multiple legal documents: CGI (taxes), Code du Travail, etc.
+Uses Qdrant for vector storage with folder-based document management.
 """
 
 import os
@@ -23,6 +24,18 @@ class ModelConfig:
     LLM_TEMPERATURE: float = 0.2
 
 
+@dataclass(frozen=True)
+class QdrantConfig:
+    """Configuration for Qdrant vector database."""
+    HOST: str = "localhost"
+    PORT: int = 6333
+    # For cloud: set QDRANT_URL and QDRANT_API_KEY in environment
+
+
+# Base folder for all document modules
+DOCUMENTS_BASE_FOLDER = "./documents"
+
+
 # =============================================================================
 # MODULE CONFIGURATIONS
 # =============================================================================
@@ -33,9 +46,8 @@ MODULES: Dict[str, Dict[str, Any]] = {
         "name": "Code Général des Impôts",
         "short_name": "CGI",
         "description": "Fiscalité marocaine, IS, IR, TVA, taxes et impôts",
-        "pdf_path": "cgi_maroc.pdf",
-        "persist_directory": "./chroma_db_cgi",
-        "collection_name": "cgi_maroc_docs",
+        "documents_folder": "./documents/cgi",  # Folder with multiple PDFs
+        "collection_name": "cgi_maroc",
         "icon": "💰",
         "color": "#D4A574",
         "enabled": True,
@@ -43,7 +55,7 @@ MODULES: Dict[str, Dict[str, Any]] = {
 
 INSTRUCTIONS :
 1. Base ta réponse sur le CONTEXTE ci-dessous
-2. Cite les articles avec leur numéro : "Article X : [texte du contexte]"
+2. Cite les sources avec le nom du fichier et la page : "[Fichier: X, Page Y]"
 3. Sois COMPLET : cite TOUS les éléments des listes (si 6 points, cite les 6)
 4. Si le contexte contient des infos pertinentes, utilise-les même si pas exactement la question posée
 5. Dis "Le contexte ne contient pas cette information spécifique" SEULEMENT si vraiment rien de pertinent
@@ -61,9 +73,8 @@ RÉPONSE :"""
         "name": "Code du Travail",
         "short_name": "CDT",
         "description": "Droit du travail marocain, contrats, licenciement, congés",
-        "pdf_path": "cdt_maroc.pdf",
-        "persist_directory": "./chroma_db_cdt",
-        "collection_name": "cdt_maroc_docs",
+        "documents_folder": "./documents/cdt",  # Folder with multiple PDFs
+        "collection_name": "cdt_maroc",
         "icon": "👷",
         "color": "#8B7355",
         "enabled": True,
@@ -71,7 +82,7 @@ RÉPONSE :"""
 
 INSTRUCTIONS :
 1. Base ta réponse sur le CONTEXTE ci-dessous
-2. Cite les articles avec leur numéro : "Article X : [texte du contexte]"
+2. Cite les sources avec le nom du fichier et la page : "[Fichier: X, Page Y]"
 3. Sois COMPLET : cite TOUS les éléments des listes (si 6 points, cite les 6)
 4. Si le contexte contient des infos pertinentes, utilise-les même si pas exactement la question posée
 5. Dis "Le contexte ne contient pas cette information spécifique" SEULEMENT si vraiment rien de pertinent
@@ -89,9 +100,8 @@ RÉPONSE :"""
         "name": "Code de la Famille",
         "short_name": "Famille",
         "description": "Mariage, divorce, filiation, héritage, tutelle",
-        "pdf_path": "code_famille_maroc.pdf",
-        "persist_directory": "./chroma_db_famille",
-        "collection_name": "famille_maroc_docs",
+        "documents_folder": "./documents/famille",
+        "collection_name": "famille_maroc",
         "icon": "👨‍👩‍👧‍👦",
         "color": "#9B6B8C",
         "enabled": False,  # Coming soon
@@ -102,9 +112,8 @@ RÉPONSE :"""
         "name": "Immobilier",
         "short_name": "Immo",
         "description": "Droit immobilier, propriété, location, copropriété",
-        "pdf_path": "code_immobilier_maroc.pdf",
-        "persist_directory": "./chroma_db_immobilier",
-        "collection_name": "immobilier_maroc_docs",
+        "documents_folder": "./documents/immobilier",
+        "collection_name": "immobilier_maroc",
         "icon": "🏠",
         "color": "#5D8AA8",
         "enabled": False,  # Coming soon

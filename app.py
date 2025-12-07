@@ -7,7 +7,7 @@ import streamlit as st
 from typing import Optional, Tuple, Dict, Any
 
 from config import MODULES, get_module_config
-from document_loader import DocumentProcessor, PDFLoadError
+from document_loader import FolderDocumentProcessor, create_folder_processor, PDFLoadError
 from vector_store import VectorStoreManager, create_vector_store_manager
 from rag_chain import RAGChainBuilder, RAGQueryHandler, create_rag_chain
 
@@ -259,40 +259,53 @@ def go_back_to_home():
 def load_module_resources(module_id: str) -> Tuple[bool, Optional[str], int, Optional[VectorStoreManager]]:
     """
     Load and cache resources for a specific module.
+    Uses Qdrant for vector storage (local or cloud).
     
     Returns:
-        Tuple of (success, error_message, num_chunks, vector_store_manager)
+        Tuple of (success, error_message, num_vectors, vector_store_manager)
     """
     try:
         module_config = get_module_config(module_id)
         
-        # Create document processor
-        doc_processor = DocumentProcessor(pdf_path=module_config["pdf_path"])
-        
-        # Create vector store manager
+        # Create vector store manager (Qdrant)
         vs_manager = create_vector_store_manager(module_config)
         
-        # Check if vector store exists
-        if vs_manager.vector_store_exists():
-            vs_manager.load_vector_store()
-            return True, None, -1, vs_manager
+        # Check if collection exists and has vectors
+        collection_info = vs_manager.get_collection_info()
         
-        # Load and process documents
-        documents = doc_processor.load_and_split()
+        if collection_info["exists"] and collection_info["count"] > 0:
+            # Collection exists with data - ready to use
+            return True, None, collection_info["count"], vs_manager
         
-        # Create vector store
-        vs_manager.create_vector_store(documents)
+        # Collection is empty or doesn't exist - need to sync documents first
+        # Check if there are documents to process
+        doc_processor = create_folder_processor(module_config)
+        pdf_files = doc_processor.get_pdf_files()
         
-        return True, None, len(documents), vs_manager
+        if not pdf_files:
+            return False, (
+                f"Aucun document trouvé dans le dossier '{module_config['documents_folder']}'. "
+                f"Ajoutez des fichiers PDF et exécutez: python sync_documents.py --module {module_id}"
+            ), 0, None
         
-    except PDFLoadError as e:
-        return False, str(e), 0, None
+        # Documents exist but not synced - prompt user to sync
+        return False, (
+            f"La base vectorielle est vide. "
+            f"Exécutez: python sync_documents.py --module {module_id}"
+        ), 0, None
+        
     except Exception as e:
-        return False, f"Erreur inattendue: {str(e)}", 0, None
+        error_msg = str(e)
+        if "Connection refused" in error_msg or "connect" in error_msg.lower():
+            return False, (
+                "Impossible de se connecter à Qdrant. "
+                "Assurez-vous que Qdrant est en cours d'exécution: docker run -p 6333:6333 qdrant/qdrant"
+            ), 0, None
+        return False, f"Erreur inattendue: {error_msg}", 0, None
 
 
 # Version bump to invalidate cache when prompts change (NO underscore = included in cache key)
-RAG_CHAIN_VERSION = "v6_query_rewriter"
+RAG_CHAIN_VERSION = "v7_qdrant"
 
 @st.cache_resource(show_spinner=False)
 def get_rag_chain(_vs_manager: VectorStoreManager, module_id: str, version: str = RAG_CHAIN_VERSION) -> RAGChainBuilder:
@@ -466,13 +479,10 @@ def render_chat_page(module_id: str):
     
     # Show status
     if success:
-        if num_chunks == -1:
-            st.success(f"✅ Base {module_config['short_name']} chargée")
-        else:
-            st.success(f"✅ Base {module_config['short_name']} créée ({num_chunks} segments)")
+        st.success(f"✅ Base {module_config['short_name']} chargée ({num_chunks} vecteurs)")
     else:
         st.error(f"❌ {error}")
-        st.info(f"💡 Vérifiez que '{module_config['pdf_path']}' est présent.")
+        st.info(f"💡 Dossier documents: {module_config['documents_folder']}")
         st.stop()
     
     # Initialize RAG chain
