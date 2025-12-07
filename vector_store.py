@@ -220,24 +220,18 @@ class VectorStoreManager:
         return documents
     
     def get_retriever(self, search_kwargs: Optional[dict] = None):
-        """Get a retriever-like object for compatibility."""
+        """Get a retriever-like object compatible with LangChain."""
+        from langchain_core.runnables import RunnableLambda
+        
         k = 8
         if search_kwargs and "k" in search_kwargs:
             k = search_kwargs["k"]
         
-        # Return a simple wrapper
-        class QdrantRetriever:
-            def __init__(self, manager, k):
-                self.manager = manager
-                self.k = k
-            
-            def invoke(self, query: str) -> List[Document]:
-                return self.manager.similarity_search(query, k=self.k)
-            
-            def get_relevant_documents(self, query: str) -> List[Document]:
-                return self.invoke(query)
+        # Return a RunnableLambda for LangChain compatibility
+        def retrieve(query: str) -> List[Document]:
+            return self.similarity_search(query, k=k)
         
-        return QdrantRetriever(self, k)
+        return RunnableLambda(retrieve)
     
     def clear_collection(self):
         """Delete all documents in the collection."""
