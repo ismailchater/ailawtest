@@ -194,25 +194,26 @@ class VectorStoreManager:
         # Generate query embedding
         query_vector = embeddings.embed_query(query)
         
-        # Search
-        results = client.search(
+        # Search using query method (newer qdrant-client API)
+        results = client.query_points(
             collection_name=self.collection_name,
-            query_vector=query_vector,
-            limit=k
+            query=query_vector,
+            limit=k,
+            with_payload=True
         )
         
         # Convert to Documents
         documents = []
-        for result in results:
+        for point in results.points:
             doc = Document(
-                page_content=result.payload.get("content", ""),
+                page_content=point.payload.get("content", ""),
                 metadata={
-                    "file_name": result.payload.get("file_name", ""),
-                    "page": result.payload.get("page", 0),
-                    "chunk_id": result.payload.get("chunk_id", 0),
-                    "source": result.payload.get("source", ""),
-                    "module": result.payload.get("module", ""),
-                    "score": result.score
+                    "file_name": point.payload.get("file_name", ""),
+                    "page": point.payload.get("page", 0),
+                    "chunk_id": point.payload.get("chunk_id", 0),
+                    "source": point.payload.get("source", ""),
+                    "module": point.payload.get("module", ""),
+                    "score": point.score
                 }
             )
             documents.append(doc)
