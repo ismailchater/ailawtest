@@ -183,8 +183,7 @@ class VectorStoreManager:
         info = client.get_collection(self.collection_name)
         return {
             "exists": True,
-            "count": info.points_count,
-            "vectors_count": info.vectors_count
+            "count": info.points_count
         }
     
     def similarity_search(self, query: str, k: int = 8) -> List[Document]:
