@@ -333,41 +333,131 @@ def render_home_page():
     # Section header
     st.markdown('<div class="section-header">Choisissez votre module</div>', unsafe_allow_html=True)
     
-    # Module cards in horizontal row (4 columns)
-    modules_list = list(MODULES.items())
+    # Card styles with hover animation
+    st.markdown("""
+        <style>
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            padding: 20px 0;
+        }
+        .card-wrapper {
+            flex: 1;
+            min-width: 200px;
+            max-width: 250px;
+        }
+        .custom-card {
+            background: linear-gradient(135deg, #FFF8EC 0%, #F5EBD7 100%);
+            border: 2px solid #D4A574;
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(139, 105, 20, 0.15);
+            position: relative;
+            overflow: hidden;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .custom-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(139, 105, 20, 0.3);
+            border-color: #B8860B;
+        }
+        .custom-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+        .custom-card:hover::before {
+            left: 100%;
+        }
+        .custom-card.disabled {
+            background: linear-gradient(135deg, #E8E0D5 0%, #D8CFC0 100%);
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .custom-card.disabled:hover {
+            transform: none;
+            box-shadow: 0 4px 15px rgba(139, 105, 20, 0.15);
+        }
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #5D4E37;
+            margin-bottom: 8px;
+        }
+        .card-desc {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            color: #7A6B5A;
+            line-height: 1.4;
+        }
+        .badge-soon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #6B5B4F 0%, #4A3F35 100%);
+            color: #F5EBD7;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    # Create 4 columns for horizontal layout
     cols = st.columns(4)
     
-    for idx, (module_id, module_config) in enumerate(modules_list):
+    for idx, (module_id, module_config) in enumerate(MODULES.items()):
         is_enabled = module_config.get('enabled', True)
         
         with cols[idx]:
-            # Card container
-            with st.container():
-                # Icon
-                st.markdown(f"<div style='font-size: 2.5rem; text-align: center;'>{module_config['icon']}</div>", unsafe_allow_html=True)
-                
-                # Name
-                st.markdown(f"<div style='font-family: Playfair Display, serif; font-size: 1.1rem; font-weight: 600; color: #5D4E37; text-align: center; margin: 0.5rem 0;'>{module_config['name']}</div>", unsafe_allow_html=True)
-                
-                # Description
-                st.markdown(f"<div style='font-family: Inter, sans-serif; font-size: 0.8rem; color: #7A6B5A; text-align: center; min-height: 40px;'>{module_config['description']}</div>", unsafe_allow_html=True)
-                
-                # Button
-                if is_enabled:
-                    if st.button(
-                        f"Accéder",
-                        key=f"btn_{module_id}",
-                        use_container_width=True
-                    ):
-                        set_current_module(module_id)
-                        st.rerun()
-                else:
-                    st.button(
-                        "Bientôt",
-                        key=f"btn_{module_id}",
-                        use_container_width=True,
-                        disabled=True
-                    )
+            # Card HTML
+            disabled_class = "" if is_enabled else "disabled"
+            badge = "" if is_enabled else '<span class="badge-soon">Bientôt</span>'
+            
+            st.markdown(f"""
+                <div class="custom-card {disabled_class}">
+                    {badge}
+                    <div class="card-icon">{module_config['icon']}</div>
+                    <div class="card-title">{module_config['name']}</div>
+                    <div class="card-desc">{module_config['description']}</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            # Button below card
+            if is_enabled:
+                if st.button(
+                    f"Accéder",
+                    key=f"btn_{module_id}",
+                    use_container_width=True
+                ):
+                    set_current_module(module_id)
+                    st.rerun()
+            else:
+                st.button(
+                    "Bientôt",
+                    key=f"btn_{module_id}",
+                    use_container_width=True,
+                    disabled=True
+                )
     
     # Footer
     st.markdown("---")
