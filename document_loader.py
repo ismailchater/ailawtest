@@ -1,7 +1,8 @@
 """
-Document loader module for PDF processing.
-Handles loading and chunking of PDF documents from folders.
+Document loader module for PDF and Word document processing.
+Handles loading and chunking of documents from folders.
 Supports multiple files per module with proper metadata tracking.
+Supported formats: PDF, DOC, DOCX
 """
 
 import os
@@ -14,19 +15,27 @@ from langchain_core.documents import Document
 
 from config import ChunkingConfig
 
+# Supported file extensions
+SUPPORTED_EXTENSIONS = {'.pdf', '.doc', '.docx'}
+
 
 class PDFLoadError(Exception):
-    """Custom exception for PDF loading errors."""
+    """Custom exception for document loading errors."""
+    pass
+
+
+class DocumentLoadError(Exception):
+    """Custom exception for document loading errors."""
     pass
 
 
 class FolderDocumentProcessor:
     """
-    Handles PDF document loading and text chunking from a folder.
-    Processes all PDF files in a module's document folder.
+    Handles document loading and text chunking from a folder.
+    Processes all supported files (PDF, DOC, DOCX) in a module's document folder.
     
     Attributes:
-        folder_path: Path to the folder containing PDF files
+        folder_path: Path to the folder containing document files
         module_id: Identifier for the module
         chunk_size: Size of each text chunk
         chunk_overlap: Overlap between consecutive chunks
@@ -68,10 +77,13 @@ class FolderDocumentProcessor:
         self.folder_path.mkdir(parents=True, exist_ok=True)
     
     def get_pdf_files(self) -> List[Path]:
-        """Get all PDF files in the folder."""
+        """Get all supported document files in the folder (PDF, DOC, DOCX)."""
         if not self.folder_path.exists():
             return []
-        return list(self.folder_path.glob("*.pdf"))
+        files = []
+        for ext in SUPPORTED_EXTENSIONS:
+            files.extend(self.folder_path.glob(f"*{ext}"))
+        return sorted(files, key=lambda x: x.name.lower())
     
     def get_file_list(self) -> List[Dict[str, Any]]:
         """Get list of PDF files with metadata."""
@@ -86,19 +98,82 @@ class FolderDocumentProcessor:
             })
         return files
     
-    def load_single_pdf(self, pdf_path: Path) -> List[Document]:
+    def _load_word_document(self, doc_path: Path) -> List[Document]:
         """
-        Load a single PDF file.
+        Load a Word document (.doc or .docx).
         
         Args:
-            pdf_path: Path to the PDF file
+            doc_path: Path to the Word document
             
         Returns:
-            List[Document]: List of document pages
+            List[Document]: List of document content
         """
         try:
-            loader = PyPDFLoader(str(pdf_path))
-            documents = loader.load()
+            from docx import Document as DocxDocument
+        except ImportError:
+            raise DocumentLoadError(
+                "python-docx n'est pas installé. Exécutez: pip install python-docx"
+            )
+        
+        try:
+            doc = DocxDocument(str(doc_path))
+            
+            # Extract text from paragraphs
+            full_text = []
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    full_text.append(para.text)
+            
+            # Also extract text from tables
+            for table in doc.tables:
+                for row in table.rows:
+                    row_text = []
+                    for cell in row.cells:
+                        if cell.text.strip():
+                            row_text.append(cell.text.strip())
+                    if row_text:
+                        full_text.append(" | ".join(row_text))
+            
+            content = "\n\n".join(full_text)
+            
+            # Create single document (Word doesn't have pages like PDF)
+            return [Document(
+                page_content=content,
+                metadata={
+                    "file_name": doc_path.name,
+                    "module": self.module_id,
+                    "page": 1,
+                    "source": str(doc_path)
+                }
+            )]
+            
+        except Exception as e:
+            raise DocumentLoadError(
+                f"Erreur lors du chargement de '{doc_path.name}': {str(e)}"
+            )
+    
+    def load_single_pdf(self, pdf_path: Path) -> List[Document]:
+        """
+        Load a single document file (PDF, DOC, or DOCX).
+        
+        Args:
+            pdf_path: Path to the document file
+            
+        Returns:
+            List[Document]: List of document pages/content
+        """
+        file_ext = pdf_path.suffix.lower()
+        
+        try:
+            if file_ext == '.pdf':
+                loader = PyPDFLoader(str(pdf_path))
+                documents = loader.load()
+            elif file_ext in ['.doc', '.docx']:
+                documents = self._load_word_document(pdf_path)
+            else:
+                raise DocumentLoadError(
+                    f"Format non supporté: {file_ext}. Formats supportés: PDF, DOC, DOCX"
+                )
             
             # Add file name to metadata
             file_name = pdf_path.name
@@ -108,8 +183,10 @@ class FolderDocumentProcessor:
             
             return documents
             
+        except (PDFLoadError, DocumentLoadError):
+            raise
         except Exception as e:
-            raise PDFLoadError(
+            raise DocumentLoadError(
                 f"Erreur lors du chargement de '{pdf_path.name}': {str(e)}"
             )
     

@@ -104,8 +104,23 @@ RÉPONSE :"""
         "collection_name": "famille_maroc",
         "icon": "👨‍👩‍👧‍👦",
         "color": "#9B6B8C",
-        "enabled": False,  # Coming soon
-        "system_prompt": ""
+        "enabled": True,
+        "system_prompt": """Tu es un expert en droit de la famille marocain. Réponds à partir du CONTEXTE fourni.
+
+INSTRUCTIONS :
+1. Base ta réponse sur le CONTEXTE ci-dessous
+2. Cite les sources avec le nom du fichier et la page : "[Fichier: X, Page Y]"
+3. Sois COMPLET : cite TOUS les éléments des listes (si 6 points, cite les 6)
+4. Si le contexte contient des infos pertinentes, utilise-les même si pas exactement la question posée
+5. Dis "Le contexte ne contient pas cette information spécifique" SEULEMENT si vraiment rien de pertinent
+6. Pas de salutations, commence directement par la réponse
+
+CONTEXTE DU CODE DE LA FAMILLE :
+{context}
+
+QUESTION : {question}
+
+RÉPONSE :"""
     },
     "immobilier": {
         "id": "immobilier",
