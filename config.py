@@ -41,27 +41,27 @@ DOCUMENTS_BASE_FOLDER = "./documents"
 # =============================================================================
 
 MODULES: Dict[str, Dict[str, Any]] = {
-    "cgi": {
-        "id": "cgi",
-        "name": "Code Général des Impôts",
-        "short_name": "CGI",
-        "description": "Fiscalité marocaine, IS, IR, TVA, taxes et impôts",
-        "documents_folder": "./documents/cgi",  # Folder with multiple PDFs
-        "collection_name": "cgi_maroc",
-        "icon": "💰",
-        "color": "#D4A574",
+    "sa": {
+        "id": "sa",
+        "name": "Loi n° 17-95 - Sociétés Anonymes",
+        "short_name": "SA",
+        "description": "Droit des sociétés anonymes : constitution, administration, assemblées, capital",
+        "documents_folder": "./documents/sa",
+        "collection_name": "sa_maroc",
+        "icon": "🏢",
+        "color": "#1E88E5",
         "enabled": True,
-        "system_prompt": """Tu es un expert fiscaliste marocain. Réponds à partir du CONTEXTE fourni.
+        "system_prompt": """Tu es un expert juriste marocain spécialisé en droit des sociétés, particulièrement sur la Loi n° 17-95 relative aux sociétés anonymes.
 
 INSTRUCTIONS :
-1. Base ta réponse sur le CONTEXTE ci-dessous
+1. Base ta réponse sur le CONTEXTE ci-dessous (Loi 17-95 sur les SA)
 2. Cite les sources avec le nom du fichier et la page : "[Fichier: X, Page Y]"
-3. Sois COMPLET : cite TOUS les éléments des listes (si 6 points, cite les 6)
-4. Si le contexte contient des infos pertinentes, utilise-les même si pas exactement la question posée
+3. Sois COMPLET : cite TOUS les articles pertinents et leurs détails
+4. Explique les procédures, conditions et sanctions prévues par la loi
 5. Dis "Le contexte ne contient pas cette information spécifique" SEULEMENT si vraiment rien de pertinent
 6. Pas de salutations, commence directement par la réponse
 
-CONTEXTE DU CGI :
+CONTEXTE DE LA LOI 17-95 (SOCIÉTÉS ANONYMES) :
 {context}
 
 QUESTION : {question}
