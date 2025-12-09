@@ -316,44 +316,143 @@ def render_home_page():
     # Section header
     st.markdown('<div class="section-header">Choisissez votre module</div>', unsafe_allow_html=True)
     
-    # Create 4 columns with gaps for horizontal layout
-    cols = st.columns([1, 1, 1, 1], gap="medium")
+    # Rotating gradient border card styles
+    st.markdown("""
+        <style>
+        .cards-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 24px;
+            padding: 20px 0;
+        }
+        
+        .glow-card {
+            width: 200px;
+            height: 240px;
+            background: #4A3F35;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            place-content: center;
+            place-items: center;
+            overflow: hidden;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        
+        .glow-card::before {
+            content: '';
+            position: absolute;
+            width: 100px;
+            background-image: linear-gradient(180deg, #D4A574, #B8860B, #8B6914, #D4A574);
+            height: 130%;
+            animation: rotBGimg 4s linear infinite;
+            transition: all 0.2s linear;
+        }
+        
+        @keyframes rotBGimg {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .glow-card::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(135deg, #FFF8EC 0%, #F5EBD7 100%);
+            inset: 4px;
+            border-radius: 16px;
+        }
+        
+        .glow-card:hover::before {
+            background-image: linear-gradient(180deg, #FFD700, #B8860B, #DAA520, #FFD700);
+            animation: rotBGimg 2s linear infinite;
+        }
+        
+        .glow-card .card-content {
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .glow-card .card-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+        
+        .glow-card .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #5D4E37;
+            margin-bottom: 8px;
+        }
+        
+        .glow-card .card-desc {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            color: #7A6B5A;
+            line-height: 1.3;
+        }
+        
+        .glow-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .glow-card.disabled::before {
+            background-image: linear-gradient(180deg, #9E9E9E, #757575, #616161, #9E9E9E);
+            animation: rotBGimg 6s linear infinite;
+        }
+        
+        .glow-card .badge-soon {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 2;
+            background: linear-gradient(135deg, #6B5B4F, #4A3F35);
+            color: #F5EBD7;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    # Build cards HTML
+    cards_html = '<div class="cards-row">'
+    
+    for module_id, module_config in MODULES.items():
+        is_enabled = module_config.get('enabled', True)
+        disabled_class = "" if is_enabled else "disabled"
+        badge = "" if is_enabled else '<span class="badge-soon">Bientôt</span>'
+        
+        cards_html += f'''
+        <div class="glow-card {disabled_class}">
+            {badge}
+            <div class="card-content">
+                <div class="card-icon">{module_config["icon"]}</div>
+                <div class="card-title">{module_config["name"]}</div>
+                <div class="card-desc">{module_config["description"]}</div>
+            </div>
+        </div>
+        '''
+    
+    cards_html += '</div>'
+    st.markdown(cards_html, unsafe_allow_html=True)
+    
+    # Buttons row
+    st.markdown('<div style="height: 20px;"></div>', unsafe_allow_html=True)
+    cols = st.columns(4, gap="medium")
     
     for idx, (module_id, module_config) in enumerate(MODULES.items()):
         is_enabled = module_config.get('enabled', True)
-        
         with cols[idx]:
-            # Use st.container with border for card effect
-            with st.container(border=True):
-                # Badge for disabled modules
-                if not is_enabled:
-                    st.markdown(
-                        '<span style="background: linear-gradient(135deg, #6B5B4F, #4A3F35); color: #F5EBD7; padding: 4px 12px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; float: right;">Bientôt</span>',
-                        unsafe_allow_html=True
-                    )
-                
-                # Icon centered
-                st.markdown(
-                    f'<div style="text-align: center; font-size: 3rem; margin: 10px 0;">{module_config["icon"]}</div>',
-                    unsafe_allow_html=True
-                )
-                
-                # Title centered
-                st.markdown(
-                    f'<div style="text-align: center; font-family: Playfair Display, serif; font-size: 1.1rem; font-weight: 600; color: #5D4E37; margin-bottom: 8px;">{module_config["name"]}</div>',
-                    unsafe_allow_html=True
-                )
-                
-                # Description centered
-                st.markdown(
-                    f'<div style="text-align: center; font-size: 0.85rem; color: #7A6B5A; line-height: 1.4; min-height: 40px;">{module_config["description"]}</div>',
-                    unsafe_allow_html=True
-                )
-            
-            # Add spacing before button
-            st.markdown('<div style="height: 10px;"></div>', unsafe_allow_html=True)
-            
-            # Button below card
             if is_enabled:
                 if st.button(
                     f"Accéder au {module_config['short_name']}",
@@ -364,7 +463,7 @@ def render_home_page():
                     st.rerun()
             else:
                 st.button(
-                    "Bientôt disponible",
+                    "Bientôt",
                     key=f"btn_{module_id}",
                     use_container_width=True,
                     disabled=True
