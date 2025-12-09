@@ -42,7 +42,7 @@ DOCUMENTS_BASE_FOLDER = "./documents"
 
 MODULES: Dict[str, Dict[str, Any]] = {
     "cgi": {
-  "id": "loi_17_95",
+  "id": "cgi",
   "name": "Loi n° 17-95 - Sociétés Anonymes",
   "short_name": "Loi SA 17-95",
   "description": "Droit des sociétés anonymes au Maroc : constitution, administration, assemblées, capital et sanctions.",
