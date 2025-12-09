@@ -333,77 +333,41 @@ def render_home_page():
     # Section header
     st.markdown('<div class="section-header">Choisissez votre module</div>', unsafe_allow_html=True)
     
-    # Additional CSS for coming soon badge
-    st.markdown("""
-        <style>
-        .coming-soon-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: linear-gradient(135deg, #6B5B4F 0%, #4A3F35 100%);
-            color: #F5EBD7;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-        }
-        .module-card-disabled {
-            background: linear-gradient(135deg, #E8E0D5 0%, #D8CFC0 100%) !important;
-            opacity: 0.7;
-            position: relative;
-        }
-        .module-card-disabled:hover {
-            transform: none !important;
-            box-shadow: 0 4px 15px rgba(139, 105, 20, 0.15) !important;
-        }
-        .module-card {
-            position: relative;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-    
-    # Module cards in 2x2 grid
+    # Module cards in horizontal row (4 columns)
     modules_list = list(MODULES.items())
-    
-    # First row
-    col1, col2 = st.columns(2)
+    cols = st.columns(4)
     
     for idx, (module_id, module_config) in enumerate(modules_list):
         is_enabled = module_config.get('enabled', True)
-        col = col1 if idx % 2 == 0 else col2
         
-        with col:
-            # Create card with coming soon badge if disabled
-            card_class = "module-card" if is_enabled else "module-card module-card-disabled"
-            badge_html = '' if is_enabled else '<span class="coming-soon-badge">Bientôt</span>'
-            
-            card_html = f"""
-            <div class="{card_class}">
-                {badge_html}
-                <div class="module-icon">{module_config['icon']}</div>
-                <div class="module-name">{module_config['name']}</div>
-                <div class="module-desc">{module_config['description']}</div>
-            </div>
-            """
-            st.markdown(card_html, unsafe_allow_html=True)
-            
-            if is_enabled:
-                if st.button(
-                    f"Accéder au {module_config['short_name']}",
-                    key=f"btn_{module_id}",
-                    use_container_width=True
-                ):
-                    set_current_module(module_id)
-                    st.rerun()
-            else:
-                # Disabled button for coming soon modules
-                st.button(
-                    f"Bientôt disponible",
-                    key=f"btn_{module_id}",
-                    use_container_width=True,
-                    disabled=True
-                )
+        with cols[idx]:
+            # Card container
+            with st.container():
+                # Icon
+                st.markdown(f"<div style='font-size: 2.5rem; text-align: center;'>{module_config['icon']}</div>", unsafe_allow_html=True)
+                
+                # Name
+                st.markdown(f"<div style='font-family: Playfair Display, serif; font-size: 1.1rem; font-weight: 600; color: #5D4E37; text-align: center; margin: 0.5rem 0;'>{module_config['name']}</div>", unsafe_allow_html=True)
+                
+                # Description
+                st.markdown(f"<div style='font-family: Inter, sans-serif; font-size: 0.8rem; color: #7A6B5A; text-align: center; min-height: 40px;'>{module_config['description']}</div>", unsafe_allow_html=True)
+                
+                # Button
+                if is_enabled:
+                    if st.button(
+                        f"Accéder",
+                        key=f"btn_{module_id}",
+                        use_container_width=True
+                    ):
+                        set_current_module(module_id)
+                        st.rerun()
+                else:
+                    st.button(
+                        "Bientôt",
+                        key=f"btn_{module_id}",
+                        use_container_width=True,
+                        disabled=True
+                    )
     
     # Footer
     st.markdown("---")
