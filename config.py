@@ -42,16 +42,16 @@ DOCUMENTS_BASE_FOLDER = "./documents"
 
 MODULES: Dict[str, Dict[str, Any]] = {
     "cgi": {
-  "id": "cgi",
-  "name": "Loi n° 17-95 - Sociétés Anonymes",
-  "short_name": "Loi SA 17-95",
-  "description": "Droit des sociétés anonymes au Maroc : constitution, administration, assemblées, capital et sanctions.",
-  "documents_folder": "./documents/cgi", 
-  "collection_name": "Sociétés Anonymes_maroc",
-  "icon": "🏢",
-  "color": "#1E88E5",
-  "enabled": True,
-        "system_prompt": """Tu es un expert juriste marocain spécialisé en droit des sociétés, et plus particulièrement sur la Loi n° 17-95 relative aux sociétés anonymes.
+        "id": "cgi",
+        "name": "Code Général des Impôts",
+        "short_name": "CGI",
+        "description": "Fiscalité marocaine, IS, IR, TVA, taxes et impôts",
+        "documents_folder": "./documents/cgi",  # Folder with multiple PDFs
+        "collection_name": "cgi_maroc",
+        "icon": "💰",
+        "color": "#D4A574",
+        "enabled": True,
+        "system_prompt": """Tu es un expert fiscaliste marocain. Réponds à partir du CONTEXTE fourni.
 
 INSTRUCTIONS :
 1. Base ta réponse sur le CONTEXTE ci-dessous
@@ -61,7 +61,7 @@ INSTRUCTIONS :
 5. Dis "Le contexte ne contient pas cette information spécifique" SEULEMENT si vraiment rien de pertinent
 6. Pas de salutations, commence directement par la réponse
 
-CONTEXTE DU SA :
+CONTEXTE DU CGI :
 {context}
 
 QUESTION : {question}
