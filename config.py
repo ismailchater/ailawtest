@@ -50,7 +50,7 @@ MODULES: Dict[str, Dict[str, Any]] = {
   "collection_name": "Sociétés Anonymes_maroc",
   "icon": "🏢",
   "color": "#1E88E5",
-  "enabled": true,
+  "enabled": True,
         "system_prompt": """Tu es un expert juriste marocain spécialisé en droit des sociétés, et plus particulièrement sur la Loi n° 17-95 relative aux sociétés anonymes.
 
 INSTRUCTIONS :
