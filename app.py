@@ -325,35 +325,32 @@ def render_home_page():
         with cols[idx]:
             # Use st.container with border for card effect
             with st.container(border=True):
-                # Badge for disabled modules
+                # Badge for disabled modules (top right)
                 if not is_enabled:
                     st.markdown(
-                        '<span style="background: linear-gradient(135deg, #6B5B4F, #4A3F35); color: #F5EBD7; padding: 4px 12px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; float: right;">Bientôt</span>',
+                        '<div style="text-align: right;"><span style="background: linear-gradient(135deg, #6B5B4F, #4A3F35); color: #F5EBD7; padding: 4px 12px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">Bientôt</span></div>',
                         unsafe_allow_html=True
                     )
                 
-                # Icon centered
+                # Icon - left aligned, large
                 st.markdown(
-                    f'<div style="text-align: center; font-size: 3rem; margin: 10px 0;">{module_config["icon"]}</div>',
+                    f'<div style="font-size: 2.5rem; margin-bottom: 15px;">{module_config["icon"]}</div>',
                     unsafe_allow_html=True
                 )
                 
-                # Title centered
+                # Title - left aligned, bold
                 st.markdown(
-                    f'<div style="text-align: center; font-family: Playfair Display, serif; font-size: 1.1rem; font-weight: 600; color: #5D4E37; margin-bottom: 8px;">{module_config["name"]}</div>',
+                    f'<div style="font-family: Playfair Display, serif; font-size: 1.25rem; font-weight: 700; color: #3D3428; margin-bottom: 10px;">{module_config["name"]}</div>',
                     unsafe_allow_html=True
                 )
                 
-                # Description centered
+                # Description - left aligned, gray
                 st.markdown(
-                    f'<div style="text-align: center; font-size: 0.85rem; color: #7A6B5A; line-height: 1.4; min-height: 40px;">{module_config["description"]}</div>',
+                    f'<div style="font-size: 0.9rem; color: #6B5A3E; line-height: 1.5; min-height: 50px;">{module_config["description"]}</div>',
                     unsafe_allow_html=True
                 )
             
-            # Add spacing before button
-            st.markdown('<div style="height: 10px;"></div>', unsafe_allow_html=True)
-            
-            # Button below card
+            # Button below card with spacing
             if is_enabled:
                 if st.button(
                     f"Accéder au {module_config['short_name']}",
