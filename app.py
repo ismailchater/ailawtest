@@ -19,7 +19,7 @@ from rag_chain import RAGChainBuilder, RAGQueryHandler, create_rag_chain
 st.set_page_config(
     page_title="IYYA - Assistant Juridique",
     page_icon="⚖️",
-    layout="centered",
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
@@ -70,18 +70,39 @@ def apply_golden_theme():
         }
         
         [data-testid="stVerticalBlockBorderWrapper"] {
-            background: linear-gradient(135deg, #FFF8EC 0%, #F5EBD7 100%) !important;
-            border: 2px solid #D4A574 !important;
-            border-radius: 16px !important;
-            padding: 1rem !important;
+            background: #FFF8EC !important; /* Solid light cream background like image */
+            border: 1px solid #D4A574 !important;
+            border-radius: 12px !important;
+            padding: 1.5rem !important;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            box-shadow: 0 4px 15px rgba(139, 105, 20, 0.15);
+            box-shadow: 0 2px 8px rgba(139, 105, 20, 0.05);
+            height: 100%;
+            min-height: 250px; /* Ensure uniform height */
         }
         
         [data-testid="stVerticalBlockBorderWrapper"]:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 30px rgba(139, 105, 20, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(139, 105, 20, 0.2);
             border-color: #B8860B !important;
+        }
+
+        /* Buttons matching the image */
+        .stButton > button {
+            background: linear-gradient(180deg, #CDA45E 0%, #B8860B 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            width: 100%;
+            text-transform: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stButton > button:hover {
+            background: linear-gradient(180deg, #D4A574 0%, #C9961A 100%);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         
         /* Chat styling */
@@ -317,7 +338,8 @@ def render_home_page():
     st.markdown('<div class="section-header">Choisissez votre module</div>', unsafe_allow_html=True)
     
     # Create 4 columns with gaps for horizontal layout
-    cols = st.columns([1, 1, 1, 1], gap="medium")
+    # Use st.columns with equal weight
+    cols = st.columns(4)
     
     for idx, (module_id, module_config) in enumerate(MODULES.items()):
         is_enabled = module_config.get('enabled', True)
@@ -328,29 +350,31 @@ def render_home_page():
                 # Badge for disabled modules (top right)
                 if not is_enabled:
                     st.markdown(
-                        '<div style="text-align: right;"><span style="background: linear-gradient(135deg, #6B5B4F, #4A3F35); color: #F5EBD7; padding: 4px 12px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">Bientôt</span></div>',
+                        '<div style="text-align: right; margin-bottom: -20px;"><span style="background: linear-gradient(135deg, #6B5B4F, #4A3F35); color: #F5EBD7; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">Bientôt</span></div>',
                         unsafe_allow_html=True
                     )
                 
                 # Icon - left aligned, large
                 st.markdown(
-                    f'<div style="font-size: 2.5rem; margin-bottom: 15px;">{module_config["icon"]}</div>',
+                    f'<div style="font-size: 3.5rem; margin-bottom: 20px;">{module_config["icon"]}</div>',
                     unsafe_allow_html=True
                 )
                 
-                # Title - left aligned, bold
+                # Title - left aligned, bold, serif
                 st.markdown(
-                    f'<div style="font-family: Playfair Display, serif; font-size: 1.25rem; font-weight: 700; color: #3D3428; margin-bottom: 10px;">{module_config["name"]}</div>',
+                    f'<div style="font-family: Playfair Display, serif; font-size: 1.4rem; font-weight: 700; color: #3D3428; margin-bottom: 12px; line-height: 1.2;">{module_config["name"]}</div>',
                     unsafe_allow_html=True
                 )
                 
-                # Description - left aligned, gray
+                # Description - left aligned, gray, smaller
                 st.markdown(
-                    f'<div style="font-size: 0.9rem; color: #6B5A3E; line-height: 1.5; min-height: 50px;">{module_config["description"]}</div>',
+                    f'<div style="font-size: 0.9rem; color: #7A6B5A; line-height: 1.5; min-height: 60px;">{module_config["description"]}</div>',
                     unsafe_allow_html=True
                 )
             
             # Button below card with spacing
+            st.markdown('<div style="height: 12px;"></div>', unsafe_allow_html=True)
+            
             if is_enabled:
                 if st.button(
                     f"Accéder au {module_config['short_name']}",
@@ -361,7 +385,7 @@ def render_home_page():
                     st.rerun()
             else:
                 st.button(
-                    "Bientôt disponible",
+                    f"Accéder au {module_config['short_name']}",
                     key=f"btn_{module_id}",
                     use_container_width=True,
                     disabled=True
