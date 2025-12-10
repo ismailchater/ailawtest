@@ -70,8 +70,8 @@ def apply_golden_theme():
         }
         
         [data-testid="stVerticalBlockBorderWrapper"] {
-            background: #FFF8EC !important; /* Solid light cream background like image */
-            border: 1px solid #D4A574 !important;
+            background: #FFFFFF !important; /* White background */
+            border: 1px solid #E0E0E0 !important;
             border-radius: 12px !important;
             padding: 1.5rem !important;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -362,13 +362,13 @@ def render_home_page():
                 
                 # Title - left aligned, bold, serif
                 st.markdown(
-                    f'<div style="font-family: Playfair Display, serif; font-size: 1.4rem; font-weight: 700; color: #3D3428; margin-bottom: 12px; line-height: 1.2;">{module_config["name"]}</div>',
+                    f'<div style="font-family: Playfair Display, serif; font-size: 1.4rem; font-weight: 700; color: #3D3428; margin-bottom: 12px; line-height: 1.2; height: 60px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{module_config["name"]}</div>',
                     unsafe_allow_html=True
                 )
                 
                 # Description - left aligned, gray, smaller
                 st.markdown(
-                    f'<div style="font-size: 0.9rem; color: #7A6B5A; line-height: 1.5; min-height: 60px;">{module_config["description"]}</div>',
+                    f'<div style="font-size: 0.9rem; color: #7A6B5A; line-height: 1.5; height: 80px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">{module_config["description"]}</div>',
                     unsafe_allow_html=True
                 )
             
