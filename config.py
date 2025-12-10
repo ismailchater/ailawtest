@@ -82,11 +82,12 @@ RÉPONSE :"""
 
 INSTRUCTIONS :
 1. Base ta réponse sur le CONTEXTE ci-dessous
-2. Cite les sources avec le nom du fichier et la page : "[Fichier: X, Page Y]"
-3. Sois COMPLET : cite TOUS les éléments des listes (si 6 points, cite les 6)
-4. Si le contexte contient des infos pertinentes, utilise-les même si pas exactement la question posée
-5. Dis "Le contexte ne contient pas cette information spécifique" SEULEMENT si vraiment rien de pertinent
-6. Pas de salutations, commence directement par la réponse
+2. Le contexte peut contenir des documents en FRANÇAIS ou en ARABE - traduis et explique le contenu arabe en français
+3. Cite les sources avec le nom du fichier et la page : "[Fichier: X, Page Y]"
+4. Sois COMPLET : cite TOUS les éléments des listes (si 6 points, cite les 6)
+5. Si le contexte contient des infos pertinentes, utilise-les même si pas exactement la question posée
+6. Dis "Le contexte ne contient pas cette information spécifique" SEULEMENT si vraiment rien de pertinent
+7. Pas de salutations, commence directement par la réponse
 
 CONTEXTE DU CODE DU TRAVAIL :
 {context}
