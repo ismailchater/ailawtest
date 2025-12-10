@@ -272,23 +272,22 @@ def render_home_page():
     st.markdown('<div class="module-header">Choisissez votre module</div>', unsafe_allow_html=True)
     st.markdown('<div class="header-line"></div>', unsafe_allow_html=True)
     
-    # 2. Module Grid (Using 2 columns to match the wide card look in the photo)
+    # 2. Module Grid (Using 4 columns to match the wide card look in the photo)
     # We create a centered layout with padding on sides if needed
     col_spacer_left, col_main, col_spacer_right = st.columns([0.5, 4, 0.5])
     
     with col_main:
-        # Create 2 columns for the cards
-        cols = st.columns(2, gap="large")
+        # Create 4 columns for the cards
+        cols = st.columns(4, gap="medium")
         
         # Convert dictionary items to list for indexing
         modules_list = list(MODULES.items())
         
         for idx, (module_id, module_config) in enumerate(modules_list):
-            # If we have more than 2 modules, wrap to next row (handled by modulo or just let streamlit flow)
-            # The example image has 2 distinct columns.
+            # If we have more than 4 modules, wrap to next row (handled by modulo or just let streamlit flow)
             
             # Use modulo to place in columns
-            col_idx = idx % 2
+            col_idx = idx % 4
             
             with cols[col_idx]:
                 is_enabled = module_config.get('enabled', True)
